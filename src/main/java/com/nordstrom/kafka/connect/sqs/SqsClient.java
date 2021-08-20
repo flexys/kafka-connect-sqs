@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import org.apache.kafka.common.Configurable;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.slf4j.Logger;
@@ -39,10 +40,6 @@ public class SqsClient {
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   private final String AWS_FIFO_SUFFIX = ".fifo";
-  private final String AWS_PROFILE = "AWS_PROFILE";
-  private final String AWS_REGION = "AWS_REGION";
-  public static final Class<? extends AWSCredentialsProvider> CREDENTIALS_PROVIDER_CLASS_DEFAULT =
-      com.amazonaws.auth.DefaultAWSCredentialsProviderChain.class;
 
   private final AmazonSQS client;
 
@@ -57,17 +54,14 @@ public class SqsClient {
     final AmazonSQSClientBuilder builder = AmazonSQSClientBuilder.standard();
     builder.setCredentials(provider);
 
-//    // If there's an AWS credentials profile and/or region configured in the
-//    // environment we will use it.
-//    final String profile = System.getenv(AWS_PROFILE);
-//    final String region = System.getenv(AWS_REGION);
-//    if (Facility.isNotNullNorEmpty(profile)) {
-//      builder.setCredentials(provider);
-//    }
-//    if (Facility.isNotNullNorEmpty(region)) {
-//      builder.setRegion(region);
-//    }
-//    log.info("AmazonSQS using profile={}, region={}", profile, region);
+    final String region = System.getenv("AWS_REGION");
+    final String localstackEndpoint = System.getenv("LOCALSTACK_ENDPOINT");
+
+    // for local testing without an AWS account
+    if (Facility.isNotNullNorEmpty(localstackEndpoint)) {
+      log.info("Applying endpoint configuration {} -> {}", localstackEndpoint, region);
+      builder.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackEndpoint, region));
+    }
 
     client = builder.build();
   }

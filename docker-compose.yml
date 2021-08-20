@@ -46,9 +46,8 @@ services:
     depends_on: [broker]
     logging: { driver: none }
 
-  # NB: run connect locally in stand-alone mode to debug
   connect:
-    image: confluentinc/cp-kafka-connect:6.0.1
+    image: eu.gcr.io/flexys-development/kafka-connect-bigquery:049bc14
     ports:
       - 8083:8083
     environment:
@@ -66,15 +65,26 @@ services:
       - CONNECT_INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
       - CONNECT_INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
 
-      - CONNECT_PLUGIN_PATH=/opt/connectors
       - KAFKA_LOG4J_OPTS=-Dlog4j.configuration=file:/etc/log4j.properties
 
-      - AWS_PROFILE
-      - AWS_REGION
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
+      # needs to match the region in the AWS profile used to create the queues (e.g. profile `default`)
+      - AWS_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      # don't set this when running against AWS
+      - LOCALSTACK_ENDPOINT=http://localhost:4566
     volumes:
       - ~/.aws:/root/.aws
-      - ./target/plugin:/opt/connectors
+      # overwrite plugin in container with local version - note that the jar will need to be manually moved to the plugin folder
+      - ./target/plugin:/usr/share/java/kafka-connect-sqs
       - ./config/log4j.properties:/etc/log4j.properties
     depends_on: [broker]
+
+  localstack:
+    image: localstack/localstack
+    ports:
+    - 4566:4566
+    - 4571:4571
+    environment:
+    - SERVICES=sqs
+    - DEBUG=1 # show stacktraces, etc

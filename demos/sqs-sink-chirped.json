@@ -2,8 +2,7 @@
   "config": {
     "connector.class": "com.nordstrom.kafka.connect.sqs.SqsSinkConnector",
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-    "name": "sqs-sink-chirped",
-    "sqs.queue.url": "https://sqs.us-west-2.amazonaws.com/CHANGEME/chirped-q",
+    "sqs.queue.url": "http://localstack:4566/000000000000/chirped-q",
     "topics": "chirps-t",
     "value.converter": "org.apache.kafka.connect.storage.StringConverter"
   },

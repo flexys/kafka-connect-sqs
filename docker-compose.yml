@@ -75,8 +75,8 @@ services:
       - LOCALSTACK_ENDPOINT=http://localhost:4566
     volumes:
       - ~/.aws:/root/.aws
-      # overwrite plugin in container with local version - note that the jar will need to be manually moved to the plugin folder
-      - ./target/plugin:/usr/share/java/kafka-connect-sqs
+      # uncomment and move jar to plugin folder to overwrite the version in the docker image with the local build
+#      - ./target/plugin:/usr/share/java/kafka-connect-sqs
       - ./config/log4j.properties:/etc/log4j.properties
     depends_on: [broker]
 
